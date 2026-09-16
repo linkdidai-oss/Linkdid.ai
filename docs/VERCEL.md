@@ -57,3 +57,9 @@ The current Sites database, profile-photo bucket and ChatGPT login accounts are 
 - [Turso JavaScript client and atomic batches](https://docs.turso.tech/sdk/ts/reference)
 - [Supabase email OTP setup](https://supabase.com/docs/guides/auth/auth-email-passwordless)
 - [Supabase verified user lookup](https://supabase.com/docs/reference/javascript/auth-getuser)
+
+## Configuration compatibility and independent sign-in
+
+The app also accepts `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_ANON_KEY`, and `NEXT_PUBLIC_SUPABASE_ANON_KEY`. The server-only photo-storage credential may be named `SUPABASE_SECRET_KEY` or `SUPABASE_SERVICE_ROLE_KEY`. `/api/auth-config` returns only a validated public URL/key; secret keys are never serialized, even if a public variable is misconfigured. The browser retries runtime configuration when the build had no public Supabase configuration.
+
+Sign-in and anonymous `/api/me` no longer require Turso or photo-storage credentials. Signed-out account visitors are directed to sign-in before requesting database-backed dashboard data. The APIs still verify access tokens and enforce ownership independently of this browser redirect. Missing Turso configuration still prevents leaderboard/profile/gas persistence: configure the Turso database and apply migrations, or perform a separately validated Postgres port before replacing that database. A Supabase Postgres connection URL is not compatible with the existing libSQL adapter.

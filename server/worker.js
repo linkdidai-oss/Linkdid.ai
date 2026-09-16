@@ -19,7 +19,7 @@ async function preserveLegacyIdentity(request,env){
  // Some Sites dispatch sessions now supply a stable ID, while earlier sessions
  // supplied only authenticated email. Resolve the existing account using ONLY
  // this Site's trusted dispatch headers; never claim profiles by their URL.
- if(!env.DB||request.headers.get('x-dispatched-app')!=='site---configure-your-sites-project')return request;
+ if(request.headers.get('x-dispatched-app')!=='site---configure-your-sites-project'||!env.DB)return request;
  const id=request.headers.get('oai-authenticated-user-id'),email=request.headers.get('oai-authenticated-user-email')?.trim().toLowerCase();
  if(!id||!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return request;
  const legacy='dispatch-email:'+email;
