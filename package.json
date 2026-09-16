@@ -1,0 +1,26 @@
+{
+  "name": "linkdid",
+  "version": "0.4.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "db:generate": "drizzle-kit generate",
+    "test": "node --test tests/*.test.mjs",
+    "build:vercel": "node scripts/build-vercel.mjs",
+    "db:migrate:vercel": "node scripts/migrate-vercel.mjs",
+    "pretest": "node scripts/prepare-tests.mjs"
+  },
+  "devDependencies": {
+    "drizzle-kit": "0.31.10",
+    "drizzle-orm": "0.45.2",
+    "esbuild": "^0.28.2"
+  },
+  "dependencies": {
+    "@libsql/client": "^0.18.0",
+    "@supabase/supabase-js": "^2.116.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

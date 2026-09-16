@@ -1,0 +1,10 @@
+import {writeFileSync,mkdirSync,cpSync,renameSync,existsSync} from 'node:fs';
+import {execFileSync} from 'node:child_process';
+import {webAssets,workerSource} from './web-assets.mjs';
+const assets=await webAssets();
+mkdirSync('dist/server',{recursive:true});mkdirSync('dist/.openai',{recursive:true});
+writeFileSync('dist/server/index.staging.js',workerSource(assets));
+execFileSync(process.execPath,['--check','dist/server/index.staging.js'],{stdio:'pipe'});
+renameSync('dist/server/index.staging.js','dist/server/index.js');
+if(existsSync('.openai/hosting.json'))cpSync('.openai/hosting.json','dist/.openai/hosting.json');else writeFileSync('dist/.openai/hosting.json',JSON.stringify({d1:'DB',r2:'BUCKET'}));cpSync('drizzle','dist/.openai/drizzle',{recursive:true});
+console.log('Validated worker, cached bundles and migrations packaged.');

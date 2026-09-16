@@ -1,0 +1,13 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "npm run build:vercel",
+  "outputDirectory": "public",
+  "functions": {"api/handler.js": {"maxDuration": 30}},
+  "rewrites": [
+    {"source": "/api/:path*", "destination": "/api/handler?__path=/api/:path*"},
+    {"source": "/photos/:path*", "destination": "/api/handler?__path=/photos/:path*"},
+    {"source": "/go/:path*", "destination": "/api/handler?__path=/go/:path*"},
+    {"source": "/((?!assets/).*)", "destination": "/index.html"}
+  ],
+  "headers": [{"source": "/assets/:path*", "headers": [{"key":"Cache-Control","value":"public, max-age=31536000, immutable"}]}]
+}

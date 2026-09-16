@@ -33,4 +33,4 @@ See [Vercel deployment](docs/VERCEL.md) for exact setup, environment variables a
 - `drizzle/`: versioned SQLite schema migrations.
 - `tests/`: gas, pricing, identity, runtime-adapter and bundle checks.
 
-Do not commit credentials, generated deployments, customer data or `node_modules`. The `.openai/hosting.json` file identifies the existing private Sites deployment; Vercel does not use that file.
+Do not commit credentials, generated deployments, customer data or `node_modules`. Private Sites hosting metadata is excluded from this public export. Vercel does not use it. Sites-only dispatcher fixtures are redacted to a placeholder; configure them separately if deploying on Sites.

@@ -1,0 +1,13 @@
+node_modules/
+dist/server/
+dist/.openai/
+.env
+.wrangler/
+
+public/
+portable/generated-worker.mjs
+.env.*
+!.env.example
+.vercel/
+
+.openai/hosting.json
