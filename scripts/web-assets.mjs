@@ -1,7 +1,7 @@
 import {readFileSync,writeFileSync,mkdirSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {gzipSync} from 'node:zlib';
-import {publicConfig} from '../portable/config.mjs';
+import {linkedProject} from '../portable/supabase-project.mjs';
 import {transform,build} from 'esbuild';
 export async function webAssets({portable=false,output=null}={}){
  const assets={};const digest=body=>createHash('sha256').update(body).digest('hex').slice(0,12);
@@ -23,7 +23,7 @@ export async function webAssets({portable=false,output=null}={}){
  let auth='';
  if(portable){
   const result=await build({entryPoints:['portable/auth-client.js'],bundle:true,write:false,minify:true,format:'iife',target:'es2022'});
-  auth='<script>window.LINKDID_PUBLIC_CONFIG='+JSON.stringify(publicConfig(process.env)).replaceAll('<','\\u003c')+'</script><script defer src="'+hashed('auth.js',result.outputFiles[0].text,'application/javascript; charset=utf-8')+'"></script>';
+  auth='<script>window.LINKDID_PUBLIC_CONFIG='+JSON.stringify(linkedProject).replaceAll('<','\\u003c')+'</script><script defer src="'+hashed('auth.js',result.outputFiles[0].text,'application/javascript; charset=utf-8')+'"></script>';
  }
  const corePath=hashed('app.js',(await transform(core,{minify:true,target:'es2022'})).code,'application/javascript; charset=utf-8');
  let html=htmlSource.replace(/<link rel="stylesheet"[^>]*>/g,'').replace(/<script src="[^>]+><\/script>/g,'').replace('</head>','<link rel="stylesheet" href="'+cssPath+'">'+auth+'<script defer src="'+corePath+'"></script></head>');
