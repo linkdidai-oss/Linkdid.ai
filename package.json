@@ -14,7 +14,8 @@
   "devDependencies": {
     "drizzle-kit": "0.31.10",
     "drizzle-orm": "0.45.2",
-    "esbuild": "^0.28.2"
+    "esbuild": "^0.28.2",
+    "jsdom": "26.1.0"
   },
   "dependencies": {
     "@libsql/client": "^0.18.0",
