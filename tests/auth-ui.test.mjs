@@ -23,3 +23,9 @@ test('invalid sign-in restores form and shows actionable error',async()=>{
 test('confirmation resend and reset need email only, not password',async()=>{
  const s=await screen();try{s.q('[name=email]').value='test@example.com';s.q('#resend-confirmation').click();await s.settle();assert.equal(s.calls[0][0],'resend');s.q('[data-mode=reset]').click();assert.equal(s.q('[name=password]').required,false);s.q('form').dispatchEvent(new s.w.Event('submit',{cancelable:true}));await s.settle();assert.equal(s.calls[1][0],'reset');assert.match(s.q('#auth-message').textContent,/reset link/)}finally{s.close()}
 });
+
+test('obfuscated duplicate signup does not promise a confirmation email',async()=>{
+ const s=await screen({signUp:async()=>({data:{session:null,user:{identities:[]}}})});try{
+ s.q('[data-mode=signup]').click();s.q('[name=email]').value='test@example.com';s.q('[name=password]').value='test-only-password';s.q('form').dispatchEvent(new s.w.Event('submit',{cancelable:true}));await s.settle();assert.match(s.q('#auth-message').textContent,/original password/);assert.doesNotMatch(s.q('#auth-message').textContent,/confirm your email/);assert.equal(s.q('#resend-confirmation').hidden,true);
+ }finally{s.close()}
+});
