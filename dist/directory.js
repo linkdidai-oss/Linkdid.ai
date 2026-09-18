@@ -42,7 +42,6 @@ function enhanceCategorySelects(){
   [...select.options].forEach(o=>{const b=document.createElement('button');b.type='button';b.dataset.value=o.value;b.innerHTML=icon(o.value||'All')+'<span>'+esc(o.textContent)+'</span>';b.onclick=e=>{e.preventDefault();select.value=o.value;select.dispatchEvent(new Event('change',{bubbles:true}));picker.open=false;summary.focus()};menu.appendChild(b)});
   picker.append(summary,menu);select.after(picker);select.hidden=true;select.addEventListener('change',update);update();
   picker.addEventListener('keydown',e=>{const buttons=[...menu.querySelectorAll('button')];if(e.key==='Escape'){picker.open=false;summary.focus();e.preventDefault()}else if(['ArrowDown','ArrowUp','Home','End'].includes(e.key)){e.preventDefault();picker.open=true;const i=buttons.indexOf(document.activeElement);buttons[e.key==='Home'?0:e.key==='End'?buttons.length-1:(i+(e.key==='ArrowDown'?1:-1)+buttons.length)%buttons.length]?.focus()}});
-  picker.addEventListener('focusout',()=>queueMicrotask(()=>{if(!picker.contains(document.activeElement))picker.open=false}));
  });
 }
 document.addEventListener('click',e=>document.querySelectorAll('.category-picker[open]').forEach(p=>{if(!p.contains(e.target))p.open=false}));
