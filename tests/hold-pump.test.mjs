@@ -12,3 +12,16 @@ test('release stops sound immediately, saves fractional progress, and excludes i
 test('release during an in-flight pulse flushes only the held tail and never resumes sound',async()=>{const s=setup();await s.pump.press();let resolve;const original=s.pump.request;s.pump.request=(path,b)=>path.endsWith('pulse')&&b.sequence===1?new Promise(r=>{resolve=async()=>r(await original(path,b))}):original(path,b);s.advance(1000);const pending=s.pump.heartbeat();s.advance(250);await s.pump.release();assert.equal(s.pump.held,false);assert.equal(s.sounds.at(-1),false);await resolve();await pending;assert.equal(s.progress(),1250);assert.equal(s.pump.session,null);assert.equal(s.sounds.at(-1),false);assert.equal(s.requests.at(-1).stop,true)});
 test('releasing while connecting cannot leave the pump earning in the background',async()=>{const s=setup();let resolve;const original=s.pump.request;s.pump.request=(path,b)=>path.endsWith('start')?new Promise(r=>{resolve=async()=>r(await original(path,b))}):original(path,b);const pending=s.pump.press();s.advance(500);await s.pump.release();await resolve();await pending;assert.equal(s.progress(),0);assert.equal(s.pump.session,null);assert.equal(s.pump.held,false);assert.equal(s.sounds.at(-1),false)});
 test('gas session waits for the nozzle to plug in and cancelling motion starts no session',async()=>{const s=setup();let finish;s.pump.connect=()=>new Promise(r=>finish=r);const pending=s.pump.press();s.advance(700);await s.pump.heartbeat();assert.equal(s.requests.length,0);await s.pump.release();finish(false);await pending;assert.equal(s.requests.length,0);assert.equal(s.pump.busy,false);const retry=s.pump.press();finish(true);await retry;assert.equal(s.requests.length,1);s.advance(1000);await s.pump.heartbeat();assert.equal(s.progress(),1000)});
+
+test('a locally full litre stays connected until server confirms the full amount',async()=>{
+ const s=setup();await s.pump.press();for(let i=0;i<59;i++){s.advance(1000);await s.pump.heartbeat()}
+ const original=s.pump.request;let clipped=false;s.pump.request=(path,b)=>{if(path.endsWith('pulse')&&!clipped){clipped=true;return original(path,{...b,heldMs:b.heldMs-20})}return original(path,b)};
+ s.advance(1000);await s.pump.heartbeat();assert.equal(s.pump.complete,false);assert.equal(s.pump.held,true);assert.equal(s.requests.at(-1).stop,false);
+ s.advance(20);await s.pump.heartbeat();assert.equal(s.litres(),1);assert.equal(s.pump.complete,true);
+});
+test('full litre captured during an in-flight save is flushed immediately without another heartbeat',async()=>{
+ const s=setup();await s.pump.press();for(let i=0;i<58;i++){s.advance(1000);await s.pump.heartbeat()}
+ const original=s.pump.request;let resolve;s.pump.request=(path,b)=>path.endsWith('pulse')&&b.sequence===59?new Promise(r=>{resolve=async()=>r(await original(path,b))}):original(path,b);
+ s.advance(1000);const pending=s.pump.heartbeat();s.advance(1000);s.pump.capture();assert.equal(s.pump.value(),60000);assert.equal(s.pump.complete,false);
+ await resolve();await pending;assert.equal(s.litres(),1);assert.equal(s.pump.complete,true);assert.equal(s.requests.at(-1).sequence,60);
+});

@@ -1,5 +1,5 @@
 import {createClient} from '@supabase/supabase-js';
-import {linkedProject} from './supabase-project.mjs';
+import {linkedProject,backendURL} from './supabase-project.mjs';
 const authClient=createClient(linkedProject.url,linkedProject.key);
 const nativeFetch=window.fetch.bind(window);
 window.linkdidAuthReady=async()=>authClient;
@@ -10,6 +10,11 @@ window.fetch=async(input,options)=>{
  if(url.origin===location.origin&&url.pathname.startsWith('/api/')){
   const {data}=await authClient.auth.getSession();const headers=new Headers(options?.headers||(input instanceof Request?input.headers:undefined));
   if(data.session)headers.set('authorization','Bearer '+data.session.access_token);
+  // Pump pulses go straight to the same authenticated Supabase backend,
+  // avoiding a Vercel proxy round trip for every progress save.
+  if(typeof input==='string'&&/^\/api\/gas\/(start|pulse)$/.test(url.pathname)){
+   headers.set('apikey',linkedProject.key);input=backendURL+url.pathname;
+  }
   options={...options,headers};
  }
  const response=await nativeFetch(input,options);

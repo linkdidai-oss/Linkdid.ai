@@ -44,7 +44,16 @@ function paintNozzle(p){
  const screens=[[38,74,67,48],[38,74,68,48],[40,74,67,48],[40,74,66,48],[38,76,65,44],[37,76,66,44],[38,76,67,44],[39,76,65,44],[37,76,65,44],[37,76,66,44],[38,76,66,44],[40,76,65,44]];
  const interpolate=rects=>rects[lower].map((n,i)=>n+(rects[upper][i]-n)*(p.position-lower));
  const place=(selector,rect)=>{const el=scene.querySelector(selector);if(!el)return;['left','top','width','height'].forEach((key,i)=>el.style[key]=`calc(${rect[i]/362*100}% + ${rect[i]/362*4-(i<2?2:0)}px)`)};
- const g=interpolate(glass);place('.glass-volume',g);place('.attendant-readout',interpolate(screens));place('.tank-name',[g[0]+9,280,g[2]-18,18]);
+ const g=interpolate(glass);place('.glass-volume',g);
+ // A fitted metal extension finishes inside the neck; its front rim occludes the tip.
+ // Coordinates share the photographic frame's 362-unit square, so resizing cannot detach it.
+ const coupling=scene.querySelector('.tank-coupling'),cx=g[0]+g[2]/2;
+ if(coupling){const opacity=Math.max(0,Math.min(1,(p.position-6.5)/1.5));coupling.style.opacity=String(opacity);
+ const path=`M ${cx-17} 153 Q ${cx-4} 155 ${cx} 161 L ${cx} 169`;
+ coupling.querySelector('.inserted-spout-shadow').setAttribute('d',path);coupling.querySelector('.inserted-spout').setAttribute('d',path);
+ coupling.querySelector('.neck-front').setAttribute('d',`M ${cx-9} 159 Q ${cx} 164 ${cx+9} 159 L ${cx+9} 165 Q ${cx} 170 ${cx-9} 165 Z`);
+ }
+place('.attendant-readout',interpolate(screens));place('.tank-name',[g[0]+9,280,g[2]-18,18]);
  const labels={docked:'Nozzle secured in pump',undocking:'Attendant is taking the nozzle',lifting:'Removing nozzle from holder',connecting:'Attendant is connecting your tank',plugging:'Inserting nozzle into tank',connected:'Tank connected · keep holding',unplugging:'Removing nozzle from tank',returning:'Returning nozzle to pump',securing:'Securing nozzle in its holder'};
  const status=document.querySelector('#coupling-status');if(status&&status.textContent!==labels[p.phase])status.textContent=labels[p.phase];
  document.querySelectorAll('[data-motion-step]').forEach(el=>el.classList.toggle('current',el.dataset.motionStep===(['undocking','lifting','connecting','plugging'].includes(p.phase)?'connecting':p.phase==='connected'?'filling':['unplugging','returning','securing'].includes(p.phase)?'returning':'ready')));
